@@ -51,25 +51,84 @@ public:
 	};
 
     void add_edge(const Vertex& from, const Vertex& to, const Distance& d) {
-		
+		if (has_vertex(from) && has_vertex(to)) {
+			graph[from].push_back(Edge(from, to, d));
+		}
+		else {
+			throw invalid_argument("Vertex is not exist");
+		}
 	};
+	bool has_edge(const Vertex& from, const Vertex& to) const {
+		auto tmp = graph.find(from);
+		if (tmp != graph.end()) {
+			for (auto tmp_e = (*tmp).second.begin(); tmp_e != (*tmp).second.end(); ++tmp_e) {
+				if ((*tmp_e).to == to) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
+	bool has_edge(const Edge& e) const {
+		auto iter = graph.find(e.from);
+		if (iter != graph.end()) {
+			for (auto iter_e = (*iter).second.begin(); iter_e != (*iter).second.end(); ++iter_e) {
+				if ((*iter_e) == e) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
+
     bool remove_edge(const Vertex& from, const Vertex& to) {
-		
+		if (has_edge(from, to)) {
+			auto tmp = graph.find(from);
+			if (tmp != graph.end()) {
+				for (auto tmp_e = (*tmp).second.begin(); tmp_e != (*tmp).second.end(); ++tmp_e) {
+					if ((*tmp_e).to == to) {
+						graph[from].erase(tmp_e);
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	};
     bool remove_edge(const Edge& e) {
-		
-	};
-    bool has_edge(const Vertex& from, const Vertex& to) const {
-		
-	};
-    bool has_edge(const Edge& e) const {
-		
+		if (has_edge(e)) {
+			auto tmp = graph.find(e.from);
+			if (tmp != graph.end()) {
+				for (auto tmp_e = (*tmp).second.begin(); tmp_e != (*tmp).second.end(); ++tmp_e) {
+					if ((*tmp_e) == e) {
+						graph[e.from].erase(tmp_e);
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	};
 
-    vector<Edge> edges(const Vertex& vertex) {};
+    vector<Edge> edges(const Vertex& vertex) {
+		vector<Edge> edges;
+		if (has_vertex(vertex)) {
+			for (auto i : graph[vertex]) {
+				edges.push_back(i);
+			}
+		}
+		return edges;
+	};
 
-    size_t order() const {};
-    size_t degree(const Vertex& v) const {};
+    size_t order() const {
+		return graph.size();
+	};
+    size_t degree(const Vertex& v)  {
+		if (has_vertex(v)) {
+			return graph[v].size();
+		}
+		throw invalid_argument("Vertex is not exists");
+	};
 
     vector<Edge> shortest_path(const Vertex& from, const Vertex& to) const {};
     vector<Vertex> walk(const Vertex& start_vertex)const {};
