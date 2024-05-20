@@ -53,12 +53,8 @@ public:
 	};
 
     void add_edge(const Vertex& from, const Vertex& to, const Distance& d) {
-		if (has_vertex(from) && has_vertex(to)) {
-			graph[from].push_back(Edge(from, to, d));
-		}
-		else {
-			throw invalid_argument("Vertex is not exist");
-		}
+		if (has_vertex(from) && has_vertex(to)) graph[from].push_back(Edge(from, to, d));
+		else throw invalid_argument("Vertex is not exist");
 	};
 	bool has_edge(const Vertex& from, const Vertex& to) const {
 		auto tmp = graph.find(from);
@@ -189,7 +185,15 @@ public:
 					}
 				}
 			}
-			
+			for (const auto& [key, val] : graph) {
+				for (auto e : graph.at(key)) {
+					Vertex name = e.to;
+					Distance dist = e.dist;
+					if (distance[key] + dist < distance[name]) {
+						throw invalid_argument("Negative cycles");
+					}
+				}
+			}
 			return distance;
 		}
 		else {
@@ -199,7 +203,7 @@ public:
 
 	Distance get_eccentricity(const Vertex& vertex) {
 		unordered_map<Vertex, Distance> min_distance = shortest_path(vertex);
-		Distance ecc = -1;
+		Distance ecc = numeric_limits<Distance>::min();
 		for (const auto& [key, val] : min_distance) {
 			if (val > ecc) {
 				ecc = val;
@@ -225,3 +229,10 @@ public:
 	}
 
 };
+template<typename Vertex>
+ostream& operator<<(ostream& os, const vector<Vertex>& vec) {
+	for (auto v : vec) {
+		os << v <<' ';
+	}
+	return os;
+}

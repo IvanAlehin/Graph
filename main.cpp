@@ -13,6 +13,7 @@ int main() {
 	graph.add_vertex(5);
 	graph.add_edge(1, 2, 1);
 	graph.add_edge(2, 1, 1);
+	//graph.add_edge(2, 1, -2);
 	graph.add_edge(2, 3, 1);
 	graph.add_edge(3, 4, 1);
 	graph.add_edge(3, 5, 1);
@@ -29,11 +30,7 @@ int main() {
 	}
 	cout << endl;
 
-	for (auto i : graph.find_center()) {
-		cout << i << endl;
-	}
-	cout << endl;
+	cout << graph.find_center()<< endl;
 
-	cout << graph.get_eccentricity(5) << endl;
     return 0;
 }
