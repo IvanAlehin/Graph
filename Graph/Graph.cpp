@@ -41,13 +41,21 @@ public:
 		if (!has_vertex(v)) graph[v] = list<Edge>();
 		else throw invalid_argument("Vertex already exists");
 	};
-    bool remove_vertex(const Vertex& v) {
-		return graph.erase(v);
+    bool remove_vertex(const Vertex& v) {//
+		if (has_vertex(v)) {
+			for (const auto& [key, val] : graph) {
+				remove_edge(key, v);
+			}
+			graph.erase(v);
+			return true;
+		}
+		return false;
+		//return graph.erase(v);
 	};
     vector<Vertex> vertices() const {
 		vector<Vertex> vec;
-		for (auto i : graph) {
-			vec.push_back(i.first);
+		for (const auto& [key, val] : graph) {
+			vec.push_back(key);
 		}
 		return vec;
 	};
@@ -123,45 +131,44 @@ public:
 	};
     size_t degree(const Vertex& v)  {
 		if (has_vertex(v)) {
-			size_t counter = graph[v].size();
-			for (auto i : graph) {
-				for (auto e : i.second) {
-					if (e.to == v) {
-						++counter;
-					}
-				}
-			}
-			return counter;
+			return graph[v].size();
 		}
 		throw invalid_argument("Vertex is not exists");
 	};
 
-	void walk(const Vertex& start_vertex)const {
+	vector<Vertex> walk(const Vertex& start_vertex)const {//
 		queue<Vertex> q;
 		auto visited = unordered_map<Vertex, int>();
+		vector<Vertex> vec ;
+		vec.push_back(start_vertex);
 		q.push(start_vertex);
 		visited[start_vertex] = 0;
 		while (!q.empty()) {
 			auto u = q.front();
 			q.pop();
+
 			for (auto e : graph.at(u)) {
 				auto v = e.to;
 				if (visited[v] == 0) {
 					visited[v] = visited[u] + 1;
+					if(v != start_vertex) vec.push_back(v);
 					q.push(v);
 				}
 			}
 		}
+		return vec;
 	};
 
-	unordered_map<Vertex, Distance> shortest_path(const Vertex& from) const {
+	pair<unordered_map<Vertex, Distance>, unordered_map<Vertex, Vertex>> shortest_path(const Vertex& from) const {//
 		if (graph.contains(from)) {
 			size_t size = graph.size();
 			unordered_map<Vertex, Distance> distance;
 			unordered_map<Vertex, size_t> visited;
+			unordered_map<Vertex, Vertex> prev;
 			for (const auto& [key, val] : graph) {
 				distance[key] = numeric_limits<Distance>::max();
 				visited[key] = 0;
+				prev[key] = NULL;
 			}
 
 			queue<Vertex> q;
@@ -180,6 +187,7 @@ public:
 					if (distance[u] + dist < distance[name]) {
 						distance[name] = distance[u] + dist;
 						++visited[name];
+						prev[name] = u;
 						q.push(name);
 
 					}
@@ -194,15 +202,33 @@ public:
 					}
 				}
 			}
-			return distance;
+			return pair(distance,prev);
 		}
 		else {
 			throw invalid_argument("Incorrect input vertex");
 		}
 	};
 
+	vector<Vertex> shortest_path(const Vertex& from, const Vertex& to) const {
+		auto s_path = shortest_path(from).second;
+		auto s_dist = shortest_path(from).first;
+		Distance dist = s_dist[to];
+		cout << "Distance: " << dist<< endl;
+		vector<Vertex> path;
+		path.push_back(to);
+
+		for (auto v = s_path[to]; v != from; v = s_path[v]) {
+			path.push_back(v);
+		}
+
+		path.push_back(from);
+		reverse(path.begin(), path.end());
+		return path;
+
+	}
+
 	Distance get_eccentricity(const Vertex& vertex) {
-		unordered_map<Vertex, Distance> min_distance = shortest_path(vertex);
+		unordered_map<Vertex, Distance> min_distance = shortest_path(vertex).first;
 		Distance ecc = numeric_limits<Distance>::min();
 		for (const auto& [key, val] : min_distance) {
 			if (val > ecc) {
